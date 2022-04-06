@@ -17,7 +17,8 @@ class StrategyResolver(StrategyCoreResolver):
         sett = self.manager.sett
         return {
             "oxSolidRewards": strategy.OXSOLID_REWARDS(),
-            "bvlOxd": strategy.bvlOxd(),
+            "bveOXD_OXD": strategy.BVEOXD_OXD(),
+            "bBveOXD_OXD": strategy.bBveOxd_Oxd(),
             "badgerTree": sett.badgerTree(),
         }
 
@@ -28,12 +29,16 @@ class StrategyResolver(StrategyCoreResolver):
         oxd = interface.IERC20(strategy.OXD())
         oxSolid = interface.IERC20(strategy.OXSOLID())  # want
         solid = interface.IERC20(strategy.SOLID())
-
-        bvlOxd = interface.IERC20(strategy.bvlOxd())
+        bveOXD = interface.IERC20(strategy.BVEOXD())
+        bveOXD_OXD = interface.IERC20(strategy.BVEOXD_OXD())
+        bBveOXD_OXD = interface.IERC20(strategy.bBveOxd_Oxd())
 
         calls = self.add_entity_balances_for_tokens(calls, "oxd", oxd, entities)
+        calls = self.add_entity_balances_for_tokens(calls, "solid", solid, entities)
         calls = self.add_entity_balances_for_tokens(calls, "oxSolid", oxSolid, entities)
-        calls = self.add_entity_balances_for_tokens(calls, "bvlOxd", bvlOxd, entities)
+        calls = self.add_entity_balances_for_tokens(calls, "bveOXD", bveOXD, entities)
+        calls = self.add_entity_balances_for_tokens(calls, "bveOXD_OXD", bveOXD_OXD, entities)
+        calls = self.add_entity_balances_for_tokens(calls, "bBveOXD_OXD", bBveOXD_OXD, entities)
 
         return calls
 
@@ -53,21 +58,21 @@ class StrategyResolver(StrategyCoreResolver):
         assert len(tx.events["TreeDistribution"]) == 1
         event = tx.events["TreeDistribution"][0]
 
-        assert after.balances("bvlOxd", "badgerTree") > before.balances(
-            "bvlOxd", "badgerTree"
+        assert after.balances("bBveOXD_OXD", "badgerTree") > before.balances(
+            "bBveOXD_OXD", "badgerTree"
         )
 
         if before.get("sett.performanceFeeGovernance") > 0:
-            assert after.balances("bvlOxd", "treasury") > before.balances(
-                "bvlOxd", "treasury"
+            assert after.balances("bBveOXD_OXD", "treasury") > before.balances(
+                "bBveOXD_OXD", "treasury"
             )
 
         if before.get("sett.performanceFeeStrategist") > 0:
-            assert after.balances("bvlOxd", "strategist") > before.balances(
-                "bvlOxd", "strategist"
+            assert after.balances("bBveOXD_OXD", "strategist") > before.balances(
+                "bBveOXD_OXD", "strategist"
             )
 
-        assert event["token"] == self.manager.strategy.bvlOxd()
+        assert event["token"] == self.manager.strategy.bBveOxd_Oxd()
         assert event["amount"] == after.balances(
-            "bvlOxd", "badgerTree"
-        ) - before.balances("bvlOxd", "badgerTree")
+            "bBveOXD_OXD", "badgerTree"
+        ) - before.balances("bBveOXD_OXD", "badgerTree")

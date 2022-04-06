@@ -93,12 +93,15 @@ def badgerTree():
 def oxd():
     return interface.IERC20("0xc5A9848b9d145965d821AaeC8fA32aaEE026492d")
 
+@pytest.fixture
+def bveOxd_Oxd():
+    return interface.IERC20("0x6519546433dCB0a34A0De908e1032c46906EF664")
 
 @pytest.fixture
-def bvloxd(oxd, governance, keeper, guardian, strategist, badgerTree):
+def bBveOxd_Oxd(bveOxd_Oxd, governance, keeper, guardian, strategist, badgerTree):
     vault = TheVault.deploy({"from": accounts[0]})
     vault.initialize(
-        oxd,
+        bveOxd_Oxd,
         governance,
         keeper,
         guardian,
@@ -132,7 +135,7 @@ def deployed(
     proxyAdmin,
     randomUser,
     badgerTree,
-    bvloxd,
+    bBveOxd_Oxd,
 ):
     """
     Deploys, vault and test strategy, mock token and wires them up.
@@ -161,7 +164,7 @@ def deployed(
     # NOTE: TheVault starts unpaused
 
     strategy = OxSolidStakerStrategy.deploy({"from": deployer})
-    strategy.initialize(vault, bvloxd)
+    strategy.initialize(vault, bBveOxd_Oxd)
     # NOTE: Strategy starts unpaused
 
     vault.setStrategy(strategy, {"from": governance})

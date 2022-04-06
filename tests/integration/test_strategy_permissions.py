@@ -63,9 +63,12 @@ def test_strategy_action_permissions(deployer, vault, strategy, want, keeper):
     with brownie.reverts("onlyAuthorizedActors"):
         strategy.harvest({"from": randomUser})
 
+    chain.sleep(10000 * 13)
+    chain.mine()
     for actor in authorizedActors:
-        chain.sleep(10000 * 13)  ## 10k blocks per harvest
+        chain.snapshot()
         strategy.harvest({"from": actor})
+        chain.revert()
 
     # (if tendable) tend: onlyAuthorizedActors
     if tendable:
@@ -85,7 +88,9 @@ def test_strategy_action_permissions(deployer, vault, strategy, want, keeper):
     # withdrawToVault onlyVault 
     for actor in actorsToCheck:
         if actor == strategy.governance() or actor == strategy.strategist():
+            chain.snapshot()
             vault.withdrawToVault({"from": actor})
+            chain.revert()
         else:
             with brownie.reverts("onlyGovernanceOrStrategist"):
                 vault.withdrawToVault({"from": actor})
@@ -93,7 +98,9 @@ def test_strategy_action_permissions(deployer, vault, strategy, want, keeper):
     # setClaimRewardsOnWithdrawAll _onlyGovernanceOrStrategist()
     for actor in actorsToCheck:
         if actor == strategy.governance() or actor == strategy.strategist():
+            chain.snapshot()
             strategy.setClaimRewardsOnWithdrawAll(False, {"from": actor})
+            chain.revert()
         else:
             with brownie.reverts("onlyGovernanceOrStrategist"):
                 strategy.setClaimRewardsOnWithdrawAll(False, {"from": actor})
@@ -150,6 +157,9 @@ def test_strategy_pausing_permissions(deployer, vault, strategy, want, keeper):
     if strategy.isTendable():
         with brownie.reverts("Pausable: paused"):
             strategy.tend({"from": keeper})
+
+    chain.sleep(100000 * 13)
+    chain.mine()
 
     strategy.unpause({"from": authorizedUnpausers[0]})
 
